@@ -1,6 +1,5 @@
 #!/bin/zsh
-# Ships the version in project.yml: builds the disk image, notarizes it when credentials exist,
-# signs it for Sparkle, publishes the GitHub release, adds it to the appcast, and deploys the site.
+# Ships the version in project.yml: builds the disk image, notarizes it, signs it for Sparkle, publishes the GitHub release, adds it to the appcast, and deploys the site.
 #
 #     scripts/release.sh "What changed, in a sentence or two."
 #
@@ -10,9 +9,9 @@
 # One-time setup on a new Mac:
 #   - The Sparkle signing key must be in the login keychain. Export it from the old Mac with
 #     `generate_keys -x key.txt` and import it with `generate_keys -f key.txt`.
-#   - Notarizing needs a Developer ID Application certificate and a notarytool profile named
-#     "ramihmd-notary" (`xcrun notarytool store-credentials ramihmd-notary ...`). Without them the
-#     image ships ad-hoc signed, and people have to click Open Anyway once.
+#   - The HMDFV Inc. Developer ID Application certificate must be in the login keychain, and a
+#     notarytool profile named "ramihmd-notary" must exist:
+#     `xcrun notarytool store-credentials ramihmd-notary --apple-id <id> --team-id 8Z6WRF99H5`
 set -euo pipefail
 
 app=Pacer
@@ -34,12 +33,9 @@ if grep -q "<sparkle:version>$build</sparkle:version>" site/appcast.xml; then ec
 xcodegen generate >/dev/null
 scripts/make-dmg.sh "$dmg"
 
-if xcrun notarytool history --keychain-profile "$notary" >/dev/null 2>&1; then
-  xcrun notarytool submit "$dmg" --keychain-profile "$notary" --wait
-  xcrun stapler staple "$dmg"
-else
-  echo "No notarytool profile \"$notary\". Shipping without notarization."
-fi
+# Stapling fails unless Apple accepted the image, which stops the release there.
+xcrun notarytool submit "$dmg" --keychain-profile "$notary" --wait
+xcrun stapler staple "$dmg"
 
 # Sign after stapling, since stapling changes the file.
 products=$(xcodebuild -project "$app.xcodeproj" -scheme "$app" -configuration Release -showBuildSettings 2>/dev/null | awk -F' = ' '/ BUILD_DIR /{print $2; exit}')

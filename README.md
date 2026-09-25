@@ -61,7 +61,7 @@ TEST_RUNNER_PACER_SNAPSHOTS=1 xcodebuild -project Pacer.xcodeproj -scheme Pacer 
 
 The images land in `$TMPDIR/PacerSnapshots`.
 
-To build the downloadable disk image, run `scripts/make-dmg.sh`. It builds Release and writes `site/downloads/Pacer.dmg` with a drag-to-Applications window. The app is ad-hoc signed and not notarized, so on first launch macOS asks people to allow it in System Settings, Privacy & Security.
+To build the downloadable disk image, run `scripts/make-dmg.sh`. It builds Release and writes `site/downloads/Pacer.dmg` with a drag-to-Applications window. It signs with the HMDFV Inc. Developer ID; `scripts/release.sh` notarizes it.
 
 The app icon is drawn in code. To change it, edit `scripts/render-icon.swift` and run `swift scripts/render-icon.swift` from the repo root. The README banner is `scripts/readme-banner.html`; run `scripts/render-banner.sh` to re-render it.
 
