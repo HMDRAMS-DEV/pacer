@@ -1,5 +1,12 @@
 # Pacer
 
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/popover-dark.png">
+    <img src="docs/popover-light.png" width="360" alt="Pacer's menu bar popover: Claude at 62%, runs out in 1 day 3 hours. Codex at 28%, room for 26% a day.">
+  </picture>
+</p>
+
 A calm menu bar app that helps you pace your weekly Claude and Codex limits.
 
 **[Download for macOS](https://github.com/HMDRAMS-DEV/pacer/releases/latest)** · [pacer.ramihmd.com](https://pacer.ramihmd.com)
@@ -10,7 +17,7 @@ Pacer shows how much of each weekly limit you've used. Tell it when you want to 
 
 - **A menu bar icon that means something.** One ring per tool, filled to the share of your weekly limit you've used. A notch marks where your plan says you should be right now. If the fill passes the notch, you're ahead of plan. A ring turns orange when that tool will run out before your finish day.
 - **A popover** with each tool's status, how much you can still spend today, and a week chart of planned versus actual use per day.
-- **A plan per tool:** finish day, target percentage, shape (even, front-loaded, back-loaded), spending days, and working hours.
+- **One plan for both tools:** finish day, target percentage, shape (even, front-loaded, back-loaded), spending days, and working hours. Each tool can be tracked or turned off.
 - **Nudges.** At most one "ease off" and one "lean in" notification per tool per day, and only during your working hours.
 
 ## Where the numbers come from
