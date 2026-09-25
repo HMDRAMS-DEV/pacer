@@ -1,0 +1,73 @@
+<!doctype html>
+<!-- The README banner. Rendered to docs/banner-{light,dark}.png by scripts/render-banner.sh. -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pacer banner</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F5F3; --ink: #0D0D0D; --muted: #7A7A7A; --accent: #0A84FF; --codex: #7B61FF; --line: rgba(0,0,0,.06);
+  }
+  .dark {
+    --bg: #141414; --ink: #FFFFFF; --muted: #9A9A9A; --accent: #3B8BFF; --codex: #A08CFF; --line: rgba(255,255,255,.08);
+  }
+  html, body { margin: 0; background: transparent; }
+  body { width: 1280px; height: 640px; font-family: 'Inter', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  .banner {
+    position: relative; width: 1280px; height: 640px; border-radius: 32px; overflow: hidden; background: var(--bg);
+    box-shadow: inset 0 0 0 1px var(--line); display: grid; grid-template-columns: 1fr 520px; align-items: center;
+  }
+  .text { padding-left: 88px; color: var(--ink); }
+  .brand { display: flex; align-items: center; gap: 14px; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .brand img { width: 52px; height: 52px; }
+  h1 { margin: 36px 0 0; font-size: 54px; line-height: 60px; font-weight: 700; letter-spacing: -0.03em; max-width: 680px; }
+  p { margin: 20px 0 0; font-size: 22px; line-height: 30px; color: var(--muted); max-width: 520px; }
+  .stage { position: relative; height: 640px; display: grid; place-items: center; }
+  canvas { position: absolute; inset: 0; }
+  .popover {
+    position: relative; width: 330px; border-radius: 20px; overflow: hidden;
+    box-shadow: 0 40px 100px rgba(10,132,255,.28), 0 0 0 1px rgba(0,0,0,.06);
+  }
+  .popover img { display: block; width: 100%; }
+</style>
+</head>
+<body>
+<div class="banner">
+  <div class="text">
+    <div class="brand"><img id="icon" alt="">Pacer</div>
+    <h1>Make your Claude and Codex limits last the week.</h1>
+    <p>A calm macOS menu bar app that tells you when to push and when to ease off.</p>
+  </div>
+  <div class="stage">
+    <canvas id="halo" width="1040" height="1280" style="width: 520px; height: 640px"></canvas>
+    <div class="popover"><img id="popover" alt=""></div>
+  </div>
+</div>
+<script>
+  const dark = location.search.includes('dark');
+  if (dark) document.documentElement.classList.add('dark');
+  document.getElementById('icon').src = `../site/assets/icon${dark ? '-dark' : ''}.png`;
+  document.getElementById('popover').src = `../site/assets/popover-${dark ? 'dark' : 'light'}.png`;
+
+  // The website's dot ripple, frozen mid-wave in its hovered colors.
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const rgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+  const mix = (a, b, t) => a.map((v, i) => Math.round(v + (b[i] - v) * t));
+  const ctx = document.getElementById('halo').getContext('2d');
+  ctx.scale(2, 2);
+  const a = rgb(css('--accent')), v = rgb(css('--codex'));
+  const w = 520, h = 640, cx = w / 2, cy = h / 2, max = 300, pitch = 18;
+  for (let y = cy % pitch; y < h; y += pitch) {
+    for (let x = cx % pitch; x < w; x += pitch) {
+      const dx = x - cx, dy = y - cy, d = Math.hypot(dx, dy), fade = 1 - d / max;
+      if (fade <= 0) continue;
+      const wave = .5 + .5 * Math.sin(d / 30 - 1.2);
+      const c = mix(a, v, (Math.atan2(dy, dx) / Math.PI + 1) / 2);
+      ctx.fillStyle = `rgba(${c.join(',')},${(.12 + wave * .45) * fade})`;
+      ctx.beginPath(); ctx.arc(x, y, .9 + wave * 2.6 * fade, 0, 7); ctx.fill();
+    }
+  }
+</script>
+</body>
+</html>

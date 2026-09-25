@@ -1,15 +1,11 @@
-# Pacer
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/banner-dark.png">
+  <img src="docs/banner-light.png" alt="Pacer: make your Claude and Codex limits last the week. A calm macOS menu bar app that tells you when to push and when to ease off.">
+</picture>
 
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="docs/popover-dark.png">
-    <img src="docs/popover-light.png" width="360" alt="Pacer's menu bar popover: Claude at 62%, runs out in 1 day 3 hours. Codex at 28%, room for 26% a day.">
-  </picture>
+  <a href="https://github.com/HMDRAMS-DEV/pacer/releases/latest"><b>Download for macOS</b></a> · <a href="https://pacer.ramihmd.com">pacer.ramihmd.com</a>
 </p>
-
-A calm menu bar app that helps you pace your weekly Claude and Codex limits.
-
-**[Download for macOS](https://github.com/HMDRAMS-DEV/pacer/releases/latest)** · [pacer.ramihmd.com](https://pacer.ramihmd.com)
 
 Pacer shows how much of each weekly limit you've used. Tell it when you want to use your limit by, for example "all of it by Friday", and how to spread it. Pacer then tells you when you're running hot and will run out early, or when you have room to lean in.
 
@@ -67,7 +63,7 @@ The images land in `$TMPDIR/PacerSnapshots`.
 
 To build the downloadable disk image, run `scripts/make-dmg.sh`. It builds Release and writes `site/downloads/Pacer.dmg` with a drag-to-Applications window. The app is ad-hoc signed and not notarized, so on first launch macOS asks people to allow it in System Settings, Privacy & Security.
 
-The app icon is drawn in code. To change it, edit `scripts/render-icon.swift` and run `swift scripts/render-icon.swift` from the repo root.
+The app icon is drawn in code. To change it, edit `scripts/render-icon.swift` and run `swift scripts/render-icon.swift` from the repo root. The README banner is `scripts/readme-banner.html`; run `scripts/render-banner.sh` to re-render it.
 
 ## Roadmap
 
