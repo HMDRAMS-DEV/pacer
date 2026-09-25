@@ -7,6 +7,15 @@
     <language>en</language>
     <!-- releases -->
     <item>
+      <title>Pacer 0.1.2</title>
+      <pubDate>Fri, 25 Sep 2026 20:35:11 +0000</pubDate>
+      <sparkle:version>3</sparkle:version>
+      <sparkle:shortVersionString>0.1.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>Pacer is now signed and notarized by Apple, so it opens without a security prompt. The installer's colors are brighter too.</p>]]></description>
+      <enclosure url="https://github.com/HMDRAMS-DEV/pacer/releases/download/v0.1.2/Pacer.dmg" type="application/octet-stream" sparkle:edSignature="5krD67pAs1RtpT51LbIx1qEW6I2mBzh82n0m0nET6zS5XkoK+SemMRonnQThKDERG16qqEq3Vg03CYpGOcJ8CA==" length="2399004"/>
+    </item>
+    <item>
       <title>Pacer 0.1.1</title>
       <pubDate>Fri, 25 Sep 2026 17:25:03 +0000</pubDate>
       <sparkle:version>2</sparkle:version>
