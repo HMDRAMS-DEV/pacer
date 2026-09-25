@@ -11,6 +11,7 @@ struct SettingsView: View {
 
     var body: some View {
         @Bindable var store = store
+        @Bindable var updater = Updater.shared
         Form {
             Section("Track") {
                 ForEach(Provider.allCases) { provider in
@@ -85,6 +86,13 @@ struct SettingsView: View {
                         openWindow(id: WindowID.setup)
                         NSApp.activate()
                     }
+                }
+            }
+
+            Section("Updates") {
+                Toggle("Check for updates automatically", isOn: $updater.automaticallyChecks)
+                LabeledContent("Version \(updater.version)") {
+                    Button("Check Now") { updater.check() }
                 }
             }
         }

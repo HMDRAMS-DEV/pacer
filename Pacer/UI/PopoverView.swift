@@ -29,6 +29,10 @@ struct PopoverView: View {
                 .display(20)
                 .foregroundStyle(.primary)
 
+            if let version = Updater.shared.available {
+                UpdateTile(version: version)
+            }
+
             if !setupDone {
                 HStack {
                     Text("Let's get you set up.")
@@ -86,6 +90,7 @@ struct PopoverView: View {
                 Button("Open Pacer") { open(WindowID.main) }
                 Button("Settings…") { open(WindowID.settings) }
                 Button("Set up again…") { open(WindowID.setup) }
+                Button("Check for Updates…") { Updater.shared.check() }
                 Divider()
                 Button("Quit Pacer") { NSApp.terminate(nil) }
             } label: {
@@ -102,6 +107,31 @@ struct PopoverView: View {
     private func open(_ id: String) {
         openWindow(id: id)
         NSApp.activate()
+    }
+}
+
+/// An update a background check found. Sparkle takes over from the button.
+struct UpdateTile: View {
+    let version: String
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.system(size: 20))
+                .foregroundStyle(Theme.accent)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Update available")
+                    .font(.system(size: 13, weight: .semibold))
+                Text("Pacer \(version) is ready.")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.secondary)
+            }
+            Spacer(minLength: 4)
+            Button("Update") { Updater.shared.check() }
+                .buttonStyle(PillButtonStyle())
+        }
+        .padding(12)
+        .tile()
     }
 }
 

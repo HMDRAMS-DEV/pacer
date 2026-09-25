@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle">
+  <channel>
+    <title>Pacer</title>
+    <link>https://pacer.ramihmd.com/appcast.xml</link>
+    <description>Pacer updates. scripts/release.sh adds each release below the marker.</description>
+    <language>en</language>
+    <!-- releases -->
+  </channel>
+</rss>

@@ -65,6 +65,18 @@ To build the downloadable disk image, run `scripts/make-dmg.sh`. It builds Relea
 
 The app icon is drawn in code. To change it, edit `scripts/render-icon.swift` and run `swift scripts/render-icon.swift` from the repo root. The README banner is `scripts/readme-banner.html`; run `scripts/render-banner.sh` to re-render it.
 
+## Updates and releases
+
+Both the app and the site use [Sparkle](https://sparkle-project.org). The app reads `site/appcast.xml` from the website once a day. An update found right after launch opens Sparkle's window; one found later waits as an "Update available" tile in the popover. **Check for Updates…** is in the popover's ⋯ menu and in Settings.
+
+To ship a release, bump `CFBundleShortVersionString` and `CFBundleVersion` in `project.yml`, commit, then run:
+
+```sh
+scripts/release.sh "What changed, in a sentence or two."
+```
+
+It builds the disk image, notarizes it when a `ramihmd-notary` notarytool profile exists, signs it for Sparkle, creates the GitHub release, adds the release to `site/appcast.xml`, commits, pushes, and deploys the site. The Sparkle signing key lives in the login keychain; back it up with `generate_keys -x` (the tool is in Xcode's SourcePackages at `artifacts/sparkle/Sparkle/bin`).
+
 ## Roadmap
 
 - Calendar-aware plans: lower a day's share based on hours of meetings.
