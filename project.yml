@@ -23,20 +23,14 @@ targets:
       path: Pacer/Info.plist
       properties:
         CFBundleDisplayName: Pacer
-        CFBundleShortVersionString: "0.1.1"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "0.1.2"
+        CFBundleVersion: "3"
         SUFeedURL: https://pacer.ramihmd.com/appcast.xml
         SUPublicEDKey: qOxwZqP7ofp2K4TUTCMqAA5P8EF/sbNrcEubiWKNHTE=
         SUEnableAutomaticChecks: true
         LSUIElement: true
         LSApplicationCategoryType: public.app-category.developer-tools
         NSHumanReadableCopyright: "MIT License"
-    entitlements:
-      path: Pacer/Pacer.entitlements
-      properties:
-        # Ad-hoc signing has no team, so hardened runtime would refuse to load Sparkle.
-        # Remove once the app is signed with a Developer ID.
-        com.apple.security.cs.disable-library-validation: true
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: dev.pacer.Pacer
@@ -47,6 +41,9 @@ targets:
       configs:
         Release:
           ENABLE_HARDENED_RUNTIME: YES
+          CODE_SIGN_IDENTITY: "Developer ID Application"
+          DEVELOPMENT_TEAM: 8Z6WRF99H5
+          OTHER_CODE_SIGN_FLAGS: --timestamp
   PacerTests:
     type: bundle.unit-test
     platform: macOS

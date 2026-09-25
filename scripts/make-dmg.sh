@@ -3,11 +3,13 @@
 #
 #     scripts/make-dmg.sh [output.dmg]
 #
-# The app is ad-hoc signed, not notarized. See README for what that means for people installing it.
+# Signs with the HMDFV Inc. Developer ID, which must be in the login keychain. scripts/release.sh
+# notarizes the result.
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
 out="${1:-site/downloads/Pacer.dmg}"
+identity="Developer ID Application: HMDFV Inc. (8Z6WRF99H5)"
 work="${TMPDIR:-/tmp}/PacerDMG"
 volume="Pacer"
 
@@ -17,6 +19,19 @@ mkdir -p "$work/stage/.background" "$(dirname "$out")"
 xcodebuild -project Pacer.xcodeproj -scheme Pacer -configuration Release -destination 'platform=macOS' build -quiet
 products=$(xcodebuild -project Pacer.xcodeproj -scheme Pacer -configuration Release -showBuildSettings 2>/dev/null | awk -F' = ' '/ BUILT_PRODUCTS_DIR /{print $2; exit}')
 ditto "$products/Pacer.app" "$work/stage/Pacer.app"
+
+# Sign inside out with the Developer ID and a secure timestamp, so the image can be notarized.
+# Xcode signs Sparkle's framework but leaves its helpers as Sparkle shipped them.
+app="$work/stage/Pacer.app"
+sparkle="$app/Contents/Frameworks/Sparkle.framework/Versions/B"
+sign() { codesign --force --timestamp --options runtime --sign "$identity" "$@"; }
+sign "$sparkle/XPCServices/Installer.xpc"
+sign --preserve-metadata=entitlements "$sparkle/XPCServices/Downloader.xpc"
+sign "$sparkle/Autoupdate"
+sign "$sparkle/Updater.app"
+sign "$app/Contents/Frameworks/Sparkle.framework"
+sign "$app"
+codesign --verify --deep --strict "$app"
 ln -s /Applications "$work/stage/Applications"
 swift scripts/render-dmg-background.swift "$work/stage/.background/background.tiff" >/dev/null
 
@@ -51,5 +66,6 @@ chmod -Rf go-w "/Volumes/$volume" || true
 sync
 hdiutil detach "/Volumes/$volume" -quiet
 hdiutil convert "$work/rw.dmg" -format UDZO -imagekey zlib-level=9 -ov -o "$out" -quiet
+codesign --force --timestamp --sign "$identity" "$out"
 rm -rf "$work"
 echo "Wrote $out ($(du -h "$out" | cut -f1))"
