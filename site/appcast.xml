@@ -7,6 +7,15 @@
     <language>en</language>
     <!-- releases -->
     <item>
+      <title>Pacer 0.1.3</title>
+      <pubDate>Sat, 26 Sep 2026 02:38:37 +0000</pubDate>
+      <sparkle:version>4</sparkle:version>
+      <sparkle:shortVersionString>0.1.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>The popover now opens with the Pacer wordmark, and the day moves to the right.</p>]]></description>
+      <enclosure url="https://github.com/HMDRAMS-DEV/pacer/releases/download/v0.1.3/Pacer.dmg" type="application/octet-stream" sparkle:edSignature="l7xLG1jUf1yxbpVoa5sAoDTE+cRptFR8Od9bgM7uhLb7Lqw9r5ZDyCpdX8OgdDSbmF+CY6zqewa0LMhcDMj4AA==" length="2413159"/>
+    </item>
+    <item>
       <title>Pacer 0.1.2</title>
       <pubDate>Fri, 25 Sep 2026 20:35:11 +0000</pubDate>
       <sparkle:version>3</sparkle:version>
