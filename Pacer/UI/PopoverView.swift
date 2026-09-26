@@ -25,9 +25,13 @@ struct PopoverView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(Format.weekday(store.now))
-                .display(20)
-                .foregroundStyle(.primary)
+            HStack(alignment: .firstTextBaseline) {
+                Wordmark(size: 20)
+                Spacer()
+                Text(Format.weekday(store.now))
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.secondary)
+            }
 
             if let version = Updater.shared.available {
                 UpdateTile(version: version)

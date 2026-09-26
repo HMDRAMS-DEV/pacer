@@ -45,6 +45,23 @@ enum Theme {
     }
 }
 
+/// "Pacer" with the chart's "you are here" dot, the way Redpen ends with its pen's dot.
+struct Wordmark: View {
+    var size: CGFloat = 20
+
+    var body: some View {
+        let dot = size * 0.3
+        HStack(alignment: .firstTextBaseline, spacing: size * 0.3) {
+            Text("Pacer").display(size).foregroundStyle(.primary)
+            Circle().fill(Theme.accent)
+                .frame(width: dot, height: dot)
+                .background(Circle().fill(Theme.accent.opacity(0.28)).frame(width: dot * 1.9, height: dot * 1.9))
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("Pacer")
+    }
+}
+
 extension Provider {
     /// The tool's mark, as a template image that takes the foreground color.
     var logo: Image {
