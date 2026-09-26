@@ -38,6 +38,7 @@ For each tool, Pacer lays your plan over the current limit window. It takes the 
 - **Pace:** compares your actual usage with the curve now.
 - **Forecast:** assumes your current ratio to the plan holds. That gives your projected usage at the finish, or the time you'll hit 100%.
 - **Allowance:** divides what's left over the rest of the plan in the same proportions. That gives "left today" and "per day from here".
+- **Fresh-week guidance:** names the first spending day's target and whether a front-loaded or back-loaded plan tapers or builds after it.
 
 The math is in `Pacer/Model/PaceMath.swift` and covered by `PacerTests/PaceMathTests.swift`.
 

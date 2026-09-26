@@ -281,6 +281,12 @@ extension PaceReport {
                 ? ("sun.max.fill", "\(Format.percent(todayLeft)) left today", .accent)
                 : ("checkmark", "On pace, resets in \(reset)", .neutral)
         case .fresh:
+            let spendingDays = schedule.days.filter { $0.share > 0 }
+            if shape != .even, let first = spendingDays.first, spendingDays.count > 1 {
+                let day = first.start.formatted(.dateTime.weekday(.abbreviated))
+                let direction = shape == .frontLoaded ? "taper" : "build"
+                return ("sparkles", "Aim for \(Format.percent(target * first.share)) \(day), then \(direction)", .accent)
+            }
             return ("sparkles", "Fresh week, \(Format.percent(typicalDay)) a day", .accent)
         case .done:
             return ("checkmark.seal.fill", "Target hit, resets in \(reset)", .good)
@@ -300,6 +306,13 @@ extension PaceReport {
         let finish = Format.weekday(finishBy)
         switch state {
         case .fresh:
+            let spendingDays = schedule.days.filter { $0.share > 0 }
+            if shape != .even, let first = spendingDays.first, let last = spendingDays.last, first.date != last.date {
+                let firstTarget = Format.percent(target * first.share)
+                let lastTarget = Format.percent(target * last.share)
+                let change = shape == .frontLoaded ? "tapers" : "builds"
+                return "Plan starts at \(firstTarget) \(Format.weekday(first.start)) and \(change) to \(lastTarget) \(Format.weekday(last.start))."
+            }
             return "Plan on about \(Format.percent(typicalDay)) a day through \(finish)."
         case .onPace:
             return todayLeft >= 0.5

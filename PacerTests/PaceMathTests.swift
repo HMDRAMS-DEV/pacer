@@ -54,6 +54,24 @@ struct PaceMathTests {
         #expect(abs(shares.reduce(0, +) - 1) < 1e-9)
     }
 
+    @Test func freshFrontLoadedCopyMatchesDailyTargets() {
+        var plan = PacePlan()
+        plan.shape = .frontLoaded
+        let report = report(used: 2, at: "2026-09-20T13:00:00Z", plan: plan)
+        #expect(report.state == .fresh)
+        #expect(report.band(now: date("2026-09-20T13:00:00Z")).text == "Aim for 30% Mon, then taper")
+        #expect(report.detail(now: date("2026-09-20T13:00:00Z")) == "Plan starts at 30% Monday and tapers to 10% Friday.")
+    }
+
+    @Test func freshBackLoadedCopyMatchesDailyTargets() {
+        var plan = PacePlan()
+        plan.shape = .backLoaded
+        let now = date("2026-09-20T13:00:00Z")
+        let report = report(used: 2, at: "2026-09-20T13:00:00Z", plan: plan)
+        #expect(report.band(now: now).text == "Aim for 10% Mon, then build")
+        #expect(report.detail(now: now) == "Plan starts at 10% Monday and builds to 30% Friday.")
+    }
+
     @Test func noSpendingDaysFallsBackToWholeWindow() {
         var plan = PacePlan()
         plan.activeWeekdays = []

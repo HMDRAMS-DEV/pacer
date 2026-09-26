@@ -172,6 +172,7 @@ struct PaceReport: Sendable {
     let used: Double
     let expected: Double
     let target: Double
+    let shape: PlanShape
     let plannedFraction: Double
     let state: PaceState
     /// Usage expected at the finish time if the current pace holds.
@@ -197,6 +198,7 @@ struct PaceReport: Sendable {
         self.used = used
         self.expected = expected
         self.target = target
+        self.shape = plan.shape
         self.plannedFraction = fraction
         self.finishBy = schedule.finishBy
         self.resetsAt = window.resetsAt
