@@ -7,6 +7,15 @@
     <language>en</language>
     <!-- releases -->
     <item>
+      <title>Pacer 0.1.5</title>
+      <pubDate>Mon, 28 Sep 2026 14:06:55 +0000</pubDate>
+      <sparkle:version>6</sparkle:version>
+      <sparkle:shortVersionString>0.1.5</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>When you still have room today, Pacer shows how much is left even if you're ahead of your hourly plan.</p>]]></description>
+      <enclosure url="https://github.com/HMDRAMS-DEV/pacer/releases/download/v0.1.5/Pacer.dmg" type="application/octet-stream" sparkle:edSignature="uu2IchcntyTNGs1V+0kczKBPqyVMQsyGDYs02V9lDI8fQodZie8zotKdatH91LUFHL++y1UimPQqIvP42UlFBg==" length="2414354"/>
+    </item>
+    <item>
       <title>Pacer 0.1.4</title>
       <pubDate>Sat, 26 Sep 2026 15:52:07 +0000</pubDate>
       <sparkle:version>5</sparkle:version>
