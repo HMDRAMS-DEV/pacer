@@ -35,6 +35,12 @@ struct SnapshotRender {
         save(SetupView(step: .plan).environment(store).environment(\.colorScheme, .dark), "setup-dark")
         save(MainView().environment(store), "main")
         save(MainView().environment(store).environment(\.colorScheme, .dark), "main-dark")
+        let monday = Dates.parseISO("2026-09-21T14:30:00Z")!
+        let morning = PacerStore(preview: [
+            .claude: usage(18, resets: "2026-09-27T12:00:00Z", points: [("2026-09-20T15:00:00Z", 12), ("2026-09-21T14:00:00Z", 18)]),
+            .codex: usage(38, resets: "2026-09-27T12:00:00Z", points: [("2026-09-20T15:00:00Z", 15), ("2026-09-21T14:00:00Z", 38)]),
+        ], now: monday)
+        save(MainView().environment(morning).environment(\.colorScheme, .dark), "morning-main-dark")
         UserDefaults.standard.set(ChartStyle.dots.rawValue, forKey: Keys.chartStyle)
         defer { UserDefaults.standard.removeObject(forKey: Keys.chartStyle) }
         for scheme in [ColorScheme.light, .dark] {

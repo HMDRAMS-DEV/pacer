@@ -296,12 +296,12 @@ extension PaceReport {
         }
     }
 
-    /// Actual versus plan, like "18% over" or "12% under".
+    /// Actual versus the current hourly plan. Early in a window, being ahead is not a forecast.
     var delta: (text: String, tone: Tone) {
         let difference = used - expected
         if abs(difference) < 1 { return ("on plan", .neutral) }
         return difference > 0
-            ? ("\(Format.percent(difference)) over", .bad)
+            ? ("\(Format.percent(difference)) ahead", projectedAtFinish == nil && todayLeft >= 0.5 ? .neutral : .bad)
             : ("\(Format.percent(-difference)) under", .good)
     }
 
@@ -322,6 +322,11 @@ extension PaceReport {
                 ? "About \(Format.percent(todayLeft)) left for today."
                 : "Today's share is spent. Next up: about \(Format.percent(perDayAfterToday)) a day."
         case .hot:
+            if projectedAtFinish == nil {
+                return todayLeft >= 0.5
+                    ? "About \(Format.percent(todayLeft)) left for today under your plan."
+                    : "Today's planned share is spent."
+            }
             let advice = todayLeft >= 0.5
                 ? "Keep today under \(Format.percent(todayLeft))."
                 : "Aim for under \(Format.percent(perDayAfterToday)) a day from here."
@@ -333,7 +338,10 @@ extension PaceReport {
             if now >= finishBy {
                 return "\(Format.percent(100 - used)) left until it resets \(Format.moment(resetsAt, now: now))."
             }
-            let leftover = max(0, target - (projectedAtFinish ?? used))
+            guard let projectedAtFinish else {
+                return "About \(Format.percent(todayLeft)) left for today under your plan."
+            }
+            let leftover = max(0, target - projectedAtFinish)
             return "On track to leave \(Format.percent(leftover)) unused. You can spend about \(Format.percent(typicalDay)) a day through \(finish)."
         case .out:
             return "Resets \(Format.moment(resetsAt, now: now))."

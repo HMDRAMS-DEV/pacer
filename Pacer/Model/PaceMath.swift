@@ -218,12 +218,19 @@ struct PaceReport: Sendable {
             perDayAfterToday = 0
         }
 
-        // Assume the ratio between actual and planned usage holds for the rest of the plan.
+        // A partial first workday (or off-day usage before it) is too little evidence to
+        // extrapolate across the week. Wait for one complete planned spending day.
         var projected: Double?
         var runOut: Date?
+        let hasCompleteSpendingDay = schedule.days.contains { day in
+            guard day.share > 0, day.end <= now,
+                  let open = calendar.date(byAdding: .hour, value: plan.dayStartHour, to: day.date),
+                  let close = calendar.date(byAdding: .hour, value: plan.dayEndHour, to: day.date) else { return false }
+            return day.start <= open && day.end >= close
+        }
         if now >= schedule.finishBy {
             projected = used
-        } else if fraction >= 0.05, expected > 0 {
+        } else if hasCompleteSpendingDay, expected > 0 {
             let ratio = used / expected
             projected = target * ratio
             if target * ratio > 100 {

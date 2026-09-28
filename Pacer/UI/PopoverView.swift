@@ -222,7 +222,9 @@ struct UsageCard: View {
                         .display(large ? 48 : 34)
                         .foregroundStyle(.primary)
                         .contentTransition(.numericText(value: report.used))
-                    planLine(report)
+                    if report.projectedAtFinish != nil {
+                        planLine(report)
+                    }
                 }
                 Group {
                     switch chartStyle {

@@ -213,7 +213,7 @@ struct PaceSeries {
 
     /// The current ratio to plan carried forward, flat after the finish.
     func forecast(at date: Date) -> Double {
-        guard report.expected >= 1, [.hot, .slack, .onPace].contains(report.state) else { return report.used }
+        guard report.projectedAtFinish != nil, [.hot, .slack, .onPace].contains(report.state) else { return report.used }
         let ratio = report.used / report.expected
         return min(100, max(report.used, ratio * plan(at: min(date, report.finishBy))))
     }

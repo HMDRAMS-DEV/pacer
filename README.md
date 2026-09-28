@@ -35,8 +35,8 @@ Things to know:
 
 For each tool, Pacer lays your plan over the current limit window. It takes the spending days between the window start and your finish day, weighted by the plan's shape and spread evenly across your working hours. That gives an expected-usage curve.
 
-- **Pace:** compares your actual usage with the curve now.
-- **Forecast:** assumes your current ratio to the plan holds. That gives your projected usage at the finish, or the time you'll hit 100%.
+- **Pace:** compares your actual usage with the curve now after a full planned spending day. The chart shows the curve from the start.
+- **Forecast:** after a full planned spending day, assumes your ratio to the plan holds. That gives your projected usage at the finish, or the time you'll hit 100%. Before then, a short burst or off-day use is too little evidence for a run-out time.
 - **Allowance:** divides what's left over the rest of the plan in the same proportions. That gives "left today" and "per day from here".
 - **Today's guidance:** when there's still room in today's allowance, the status shows how much is left even if usage is ahead of the hourly curve.
 - **Fresh-week guidance:** names the first spending day's target and whether a front-loaded or back-loaded plan tapers or builds after it.

@@ -162,7 +162,8 @@ struct PaceTrack: View {
 
     /// The current ratio to plan, carried forward to the finish or the ceiling.
     private func forecastPoints() -> [(Date, Double)] {
-        guard report.expected >= 1, now < report.finishBy, [.hot, .slack, .onPace].contains(report.state) else { return [] }
+        guard report.projectedAtFinish != nil, now < report.finishBy,
+              [.hot, .slack, .onPace].contains(report.state) else { return [] }
         let ratio = report.used / report.expected
         let end = min(report.runOutAt ?? report.finishBy, report.finishBy)
         var points = sample(from: now, to: end, count: 60) { min(100, max(report.used, ratio * report.schedule.expectedPercent(at: $0))) }

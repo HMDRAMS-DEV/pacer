@@ -99,7 +99,40 @@ struct PaceMathTests {
         let report = report(used: 18, at: "2026-09-21T10:30:00Z")
         #expect(report.state == .hot)
         #expect(report.todayLeft > 0)
+        #expect(report.projectedAtFinish == nil)
+        #expect(report.runOutAt == nil)
         #expect(report.band(now: now).text == "\(Format.percent(report.todayLeft)) left today")
+        #expect(report.delta.text == "15% ahead")
+        #expect(report.delta.tone == .neutral)
+        #expect(report.detail(now: now) == "About \(Format.percent(report.todayLeft)) left for today under your plan.")
+        #expect(PaceSeries(usage: ProviderUsage(weekly: window(used: 18), history: [], observedAt: now,
+                                               historyIsEstimated: false), report: report, now: now)
+            .forecast(at: date("2026-09-22T12:00:00Z")) == report.used)
+    }
+
+    @Test func forecastStartsAfterFirstCompleteSpendingDay() {
+        let before = report(used: 75, at: "2026-09-21T17:59:00Z")
+        let after = report(used: 75, at: "2026-09-21T18:00:00Z")
+        #expect(before.runOutAt == nil)
+        #expect(after.runOutAt != nil)
+    }
+
+    @Test func partialFirstSpendingDayDoesNotStartForecast() {
+        let partialWindow = UsageWindow(usedPercent: 75, resetsAt: date("2026-09-28T12:00:00Z"), length: UsageWindow.week)
+        let monday = PaceReport(provider: .claude, window: partialWindow, plan: PacePlan(),
+                                now: date("2026-09-21T18:00:00Z"), calendar: calendar)
+        let tuesday = PaceReport(provider: .claude, window: partialWindow, plan: PacePlan(),
+                                 now: date("2026-09-22T18:00:00Z"), calendar: calendar)
+        #expect(monday.projectedAtFinish == nil)
+        #expect(tuesday.projectedAtFinish != nil)
+    }
+
+    @Test func earlySlackDoesNotClaimUnusedWeek() {
+        let now = date("2026-09-21T12:00:00Z")
+        let report = report(used: 0, at: "2026-09-21T12:00:00Z")
+        #expect(report.state == .slack)
+        #expect(report.projectedAtFinish == nil)
+        #expect(report.detail(now: now) == "About \(Format.percent(report.todayLeft)) left for today under your plan.")
     }
 
     @Test func hotAfterTodaysShareIsSpentShowsRunOutForecast() {
