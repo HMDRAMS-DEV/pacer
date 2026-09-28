@@ -265,6 +265,9 @@ extension PaceReport {
         let reset = Format.countdown(to: resetsAt, now: now)
         switch state {
         case .hot:
+            if todayLeft >= 0.5 {
+                return ("sun.max.fill", "\(Format.percent(todayLeft)) left today", .accent)
+            }
             if let runOutAt, runOutAt < finishBy {
                 return ("flame.fill", "Runs out in \(Format.countdown(to: runOutAt, now: now))", .bad)
             }

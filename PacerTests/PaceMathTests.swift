@@ -94,6 +94,21 @@ struct PaceMathTests {
         #expect(abs(report.projectedAtFinish! - 125) < 1e-9)
     }
 
+    @Test func aheadOfMorningCurveStillShowsTodaysRoom() {
+        let now = date("2026-09-21T10:30:00Z")
+        let report = report(used: 18, at: "2026-09-21T10:30:00Z")
+        #expect(report.state == .hot)
+        #expect(report.todayLeft > 0)
+        #expect(report.band(now: now).text == "\(Format.percent(report.todayLeft)) left today")
+    }
+
+    @Test func hotAfterTodaysShareIsSpentShowsRunOutForecast() {
+        let now = date("2026-09-23T18:00:00Z")
+        let report = report(used: 75, at: "2026-09-23T18:00:00Z")
+        #expect(report.todayLeft == 0)
+        #expect(report.band(now: now).text.hasPrefix("Runs out in "))
+    }
+
     @Test func slackSuggestsLeaningIn() {
         let report = report(used: 30, at: "2026-09-23T18:00:00Z")
         #expect(report.state == .slack)
