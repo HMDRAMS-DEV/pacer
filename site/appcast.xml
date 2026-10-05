@@ -7,6 +7,15 @@
     <language>en</language>
     <!-- releases -->
     <item>
+      <title>Pacer 0.1.7</title>
+      <pubDate>Mon, 05 Oct 2026 15:30:52 +0000</pubDate>
+      <sparkle:version>8</sparkle:version>
+      <sparkle:shortVersionString>0.1.7</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>Fixes "left today" after an overspend: when you're ahead of plan, today's allowance now only covers what keeps you on plan by tonight.</p>]]></description>
+      <enclosure url="https://github.com/HMDRAMS-DEV/pacer/releases/download/v0.1.7/Pacer.dmg" type="application/octet-stream" sparkle:edSignature="hgcrrkav9DFnexmGgA2cCTJkw6SJXAnR23q3Pn+5+pF3Nfu6zALeu76mKdCSmzawRfLJdaUsp4/JtZbfGq07Aw==" length="2414521"/>
+    </item>
+    <item>
       <title>Pacer 0.1.6</title>
       <pubDate>Mon, 28 Sep 2026 15:54:48 +0000</pubDate>
       <sparkle:version>7</sparkle:version>
