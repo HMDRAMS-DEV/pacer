@@ -86,6 +86,22 @@ struct PaceMathTests {
         #expect(abs(report.perDayAfterToday - 20) < 1e-9)
     }
 
+    @Test func restDayOverspendLeavesNothingForToday() {
+        // 34% spent over the weekend is more than Monday's 20% share, so today has nothing left.
+        let now = date("2026-09-21T09:30:00Z")
+        let report = report(used: 34, at: "2026-09-21T09:30:00Z")
+        #expect(report.todayLeft == 0)
+        #expect(abs(report.perDayAfterToday - 16.5) < 1e-9)
+        #expect(report.band(now: now).text != "\(Format.percent(report.todayLeft)) left today")
+    }
+
+    @Test func overspendShrinksTodayToThePlanCurve() {
+        // Expected 40% by Tuesday evening, used 35%: only 5% left today, not a rebalanced share.
+        let report = report(used: 35, at: "2026-09-22T09:00:00Z")
+        #expect(abs(report.todayLeft - 5) < 1e-9)
+        #expect(abs(report.perDayAfterToday - 20) < 1e-9)
+    }
+
     @Test func runningHotProjectsRunOutTime() {
         // Expected 60% by Wednesday evening, used 75%: 1.25x the plan hits 100% at 80% of the plan.
         let report = report(used: 75, at: "2026-09-23T18:00:00Z")

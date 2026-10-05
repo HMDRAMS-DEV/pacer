@@ -204,15 +204,19 @@ struct PaceReport: Sendable {
         self.resetsAt = window.resetsAt
         self.schedule = schedule
 
-        // Spread what is left over the rest of the plan, in the plan's proportions.
+        // Spread what is left over the rest of the plan, in the plan's proportions. When usage
+        // is ahead of plan, today only gets what keeps it on the plan by tonight, so an overspend
+        // is paid back first instead of being spread thin across the rest of the week.
         let remaining = max(0, target - used)
         let remainingFraction = 1 - fraction
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
         let fractionByTomorrow = schedule.plannedFraction(at: tomorrow)
         let futureDays = schedule.days.filter { $0.date >= tomorrow && $0.share > 0 }.count
         if remainingFraction > 1e-6 {
-            todayLeft = remaining * (fractionByTomorrow - fraction) / remainingFraction
-            perDayAfterToday = futureDays > 0 ? remaining * (1 - fractionByTomorrow) / remainingFraction / Double(futureDays) : 0
+            let rebalanced = remaining * (fractionByTomorrow - fraction) / remainingFraction
+            let onPlanByTonight = max(0, target * fractionByTomorrow - used)
+            todayLeft = min(rebalanced, onPlanByTonight)
+            perDayAfterToday = futureDays > 0 ? (remaining - todayLeft) / Double(futureDays) : 0
         } else {
             todayLeft = 0
             perDayAfterToday = 0
