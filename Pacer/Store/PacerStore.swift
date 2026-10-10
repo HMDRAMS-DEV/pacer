@@ -66,11 +66,11 @@ final class PacerStore {
 
     @ObservationIgnored private let claude = ClaudeSource()
     @ObservationIgnored private let codex = CodexSource()
-    @ObservationIgnored private var lastClaudeAttempt: Date?
+    @ObservationIgnored private var lastAttempt: [Provider: Date] = [:]
     @ObservationIgnored private var loop: Task<Void, Never>?
 
-    /// Claude limits come from the network, so they refresh less often than local Codex logs.
-    private static let claudeInterval: TimeInterval = 5 * 60
+    /// Both tools' limits come from the network, so they refresh less often than the UI clock.
+    private static let networkInterval: TimeInterval = 5 * 60
 
     init() {
         UserDefaults.standard.register(defaults: [Keys.alertsEnabled: true])
@@ -108,7 +108,7 @@ final class PacerStore {
 
         now = Date()
         for provider in Provider.allCases where enabled.contains(provider) {
-            if provider == .claude, !force, let last = lastClaudeAttempt, now.timeIntervalSince(last) < Self.claudeInterval {
+            if !force, let last = lastAttempt[provider], now.timeIntervalSince(last) < Self.networkInterval {
                 continue
             }
             await load(provider)
@@ -125,9 +125,9 @@ final class PacerStore {
     func load(_ provider: Provider) async -> String? {
         do {
             let result: ProviderUsage
+            lastAttempt[provider] = Date()
             switch provider {
             case .claude:
-                lastClaudeAttempt = Date()
                 result = try await claude.fetch(now: Date())
             case .codex:
                 result = try await codex.fetch(now: Date())

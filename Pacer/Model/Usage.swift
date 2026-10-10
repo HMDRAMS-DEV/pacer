@@ -25,7 +25,7 @@ struct UsageWindow: Equatable, Sendable {
 }
 
 /// Cumulative weekly usage at a moment in time.
-struct UsagePoint: Equatable, Sendable {
+struct UsagePoint: Codable, Equatable, Sendable {
     var date: Date
     var usedPercent: Double
 }

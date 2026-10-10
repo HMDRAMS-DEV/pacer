@@ -20,14 +20,13 @@ Pacer shows how much of each weekly limit you've used. Tell it when you want to 
 
 | | Weekly and 5-hour limits | Daily breakdown |
 |---|---|---|
-| **Codex** | `rate_limits` events in `~/.codex/sessions/**/*.jsonl`. Local only. | Measured from the same events. |
+| **Codex** | `GET https://chatgpt.com/backend-api/wham/usage`, the request behind `/status` in Codex. It uses the ChatGPT sign-in Codex stores in `~/.codex/auth.json`. If that fails, Pacer falls back to `rate_limits` events in `~/.codex/sessions/**/*.jsonl`. | Measured. Pacer combines `rate_limits` events from the logs with the live readings it saves while running. |
 | **Claude** | `GET https://api.anthropic.com/api/oauth/usage`, the request behind `/usage` in Claude Code. It uses the sign-in Claude Code stores in your Keychain (`Claude Code-credentials`). | Estimated. The exact weekly total is spread across days in proportion to token counts in `~/.claude/projects/**/*.jsonl`. |
 
 Things to know:
 
-- Claude Code doesn't write limit percentages to disk, so Claude is the only source that uses the network. Pacer reads the Keychain item through `/usr/bin/security` and never refreshes or rewrites it. If the sign-in expires, run `claude` once to refresh it.
-- The Claude usage endpoint is undocumented and may change.
-- Codex numbers are only as fresh as your last Codex session on this Mac.
+- Claude Code doesn't write limit percentages to disk, and current Codex builds no longer write them to every session log, so Pacer reads both from the network every 5 minutes. Pacer reads the Claude Keychain item through `/usr/bin/security` and the Codex `auth.json` file, and never refreshes or rewrites either. If a sign-in expires, run `claude` or `codex` once to refresh it.
+- Both usage endpoints are undocumented and may change.
 - Pacer reads only token counts, timestamps, and rate-limit fields. It doesn't store or send your prompts, code, or replies.
 - Pacer has no account, server, or analytics.
 
