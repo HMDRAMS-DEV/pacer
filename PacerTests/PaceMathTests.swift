@@ -16,38 +16,125 @@ struct PaceMathTests {
         UsageWindow(usedPercent: used, resetsAt: date("2026-09-27T12:00:00Z"), length: UsageWindow.week)
     }
 
-    func report(used: Double, at now: String, plan: PacePlan = PacePlan()) -> PaceReport {
+    func report(used: Double, at now: String, plan: PacePlan = PacePlan(finishWeekday: 6)) -> PaceReport {
         PaceReport(provider: .claude, window: window(used: used), plan: plan, now: date(now), calendar: calendar)
     }
 
     @Test func finishesAtEndOfFridayWorkday() {
-        let schedule = PaceSchedule(plan: PacePlan(), window: window(), calendar: calendar)
+        let schedule = PaceSchedule(plan: PacePlan(finishWeekday: 6), window: window(), calendar: calendar)
         #expect(schedule.finishBy == date("2026-09-25T18:00:00Z"))
     }
 
     @Test func finishAtResetUsesWholeWindow() {
-        var plan = PacePlan()
+        var plan = PacePlan(finishWeekday: 6)
         plan.finishWeekday = nil
         let schedule = PaceSchedule(plan: plan, window: window(), calendar: calendar)
         #expect(schedule.finishBy == date("2026-09-27T12:00:00Z"))
     }
 
-    @Test func evenPlanSharesWorkdaysEqually() {
+    @Test func tuesdayResetKeepsRemainingWorkdaysInThePlan() {
+        var toronto = calendar
+        toronto.timeZone = TimeZone(identifier: "America/Toronto")!
+        var plan = PacePlan(finishWeekday: 6)
+        plan.finishWeekday = nil
+        plan.shape = .frontLoaded
+        let now = date("2026-10-11T01:00:00Z") // Saturday evening in Toronto.
+        let window = UsageWindow(usedPercent: 63, resetsAt: Date(timeIntervalSince1970: 1791948930),
+                                 length: UsageWindow.week)
+        let report = PaceReport(provider: .codex, window: window, plan: plan, now: now, calendar: toronto)
+        #expect(report.finishBy == window.resetsAt)
+        #expect(abs(report.expected - 75) < 1e-9)
+        #expect(abs(report.perDayAfterToday - 18.5) < 1e-9)
+        #expect(report.delta.text == "12% under plan")
+        #expect(report.band(now: now).text == "Use 19% per spending day")
+    }
+
+    @Test func pastFridayTargetDistinguishesPlanFromRemainingLimit() {
+        let now = date("2026-09-26T10:00:00Z")
+        let report = report(used: 63, at: "2026-09-26T10:00:00Z")
+        #expect(report.expected == 100)
+        #expect(report.delta.text == "37% under plan")
+        #expect(report.finishBy == report.resetsAt)
+        #expect(report.usesOffDays)
+        #expect(report.todayLeft == 37)
+        #expect(report.perDayAfterToday == 0)
+        #expect(report.band(now: now).text == "Use 37% in 1d 2h")
+        #expect(report.detail(now: now).contains("No spending hours remain"))
+    }
+
+    @Test func missedFridayFinishRebalancesThroughTuesdayReset() {
+        var toronto = calendar
+        toronto.timeZone = TimeZone(identifier: "America/Toronto")!
+        var plan = PacePlan(finishWeekday: 6)
+        plan.shape = .frontLoaded
+        let now = date("2026-10-11T01:00:00Z")
+        let window = UsageWindow(usedPercent: 63, resetsAt: Date(timeIntervalSince1970: 1791948930), length: UsageWindow.week)
+        let report = PaceReport(provider: .codex, window: window, plan: plan, now: now, calendar: toronto)
+        #expect(report.finishBy == window.resetsAt)
+        #expect(abs(report.expected - 75) < 1e-9)
+        #expect(abs(report.perDayAfterToday - 18.5) < 1e-9)
+        #expect(!report.usesOffDays)
+        #expect(report.band(now: now).text == "Use 19% per spending day")
+    }
+
+    @Test func afterLastWorkdayStillOffersRemainingCapacity() {
+        let now = date("2026-09-26T10:00:00Z")
+        var plan = PacePlan(finishWeekday: 6)
+        plan.finishWeekday = nil
+        let report = report(used: 63, at: "2026-09-26T10:00:00Z", plan: plan)
+        #expect(report.usesOffDays)
+        #expect(report.todayLeft > 0)
+        #expect(report.todayLeft + report.perDayAfterToday == 37)
+        #expect(report.state == .slack)
+        #expect(report.band(now: now).text == "Use 37% in 1d 2h")
+    }
+
+    @Test func defaultPlanFollowsProviderReset() {
         let schedule = PaceSchedule(plan: PacePlan(), window: window(), calendar: calendar)
+        #expect(schedule.finishBy == window().resetsAt)
+    }
+
+    @Test func lastHourOffersAllRemainingCapacity() {
+        let now = date("2026-09-27T11:00:00Z")
+        let report = report(used: 63, at: "2026-09-27T11:00:00Z")
+        #expect(report.todayLeft == 37)
+        #expect(report.perDayAfterToday == 0)
+        #expect(report.band(now: now).text == "Use 37% in 1h")
+    }
+
+    @Test func smallLeftoverStillNeedsCatchUpBeforeReset() {
+        let now = date("2026-09-27T11:00:00Z")
+        let report = report(used: 98, at: "2026-09-27T11:00:00Z")
+        #expect(report.state == .slack)
+        #expect(report.todayLeft == 2)
+        #expect(report.band(now: now).text == "Use 2% in 1h")
+    }
+
+    @Test func catchUpPreservesChosenTarget() {
+        let now = date("2026-09-27T11:00:00Z")
+        var plan = PacePlan(finishWeekday: 6)
+        plan.targetPercent = 80
+        let report = report(used: 63, at: "2026-09-27T11:00:00Z", plan: plan)
+        #expect(report.todayLeft == 17)
+        #expect(report.band(now: now).text == "Use 17% in 1h")
+    }
+
+    @Test func evenPlanSharesWorkdaysEqually() {
+        let schedule = PaceSchedule(plan: PacePlan(finishWeekday: 6), window: window(), calendar: calendar)
         let shares = schedule.days.filter { $0.share > 0 }.map(\.share)
         #expect(shares.count == 5)
         #expect(shares.allSatisfy { abs($0 - 0.2) < 1e-9 })
     }
 
     @Test func plannedFractionInterpolatesWithinTheDay() {
-        let schedule = PaceSchedule(plan: PacePlan(), window: window(), calendar: calendar)
+        let schedule = PaceSchedule(plan: PacePlan(finishWeekday: 6), window: window(), calendar: calendar)
         #expect(abs(schedule.plannedFraction(at: date("2026-09-23T18:00:00Z")) - 0.6) < 1e-9)
         #expect(abs(schedule.plannedFraction(at: date("2026-09-23T13:30:00Z")) - 0.5) < 1e-9)
         #expect(schedule.plannedFraction(at: date("2026-09-26T12:00:00Z")) == 1)
     }
 
     @Test func frontLoadedFavorsEarlyDays() {
-        var plan = PacePlan()
+        var plan = PacePlan(finishWeekday: 6)
         plan.shape = .frontLoaded
         let shares = PaceSchedule(plan: plan, window: window(), calendar: calendar).days.map(\.share).filter { $0 > 0 }
         #expect(shares.first! > shares.last!)
@@ -55,7 +142,7 @@ struct PaceMathTests {
     }
 
     @Test func freshFrontLoadedCopyMatchesDailyTargets() {
-        var plan = PacePlan()
+        var plan = PacePlan(finishWeekday: 6)
         plan.shape = .frontLoaded
         let report = report(used: 2, at: "2026-09-20T13:00:00Z", plan: plan)
         #expect(report.state == .fresh)
@@ -64,7 +151,7 @@ struct PaceMathTests {
     }
 
     @Test func freshBackLoadedCopyMatchesDailyTargets() {
-        var plan = PacePlan()
+        var plan = PacePlan(finishWeekday: 6)
         plan.shape = .backLoaded
         let now = date("2026-09-20T13:00:00Z")
         let report = report(used: 2, at: "2026-09-20T13:00:00Z", plan: plan)
@@ -73,7 +160,7 @@ struct PaceMathTests {
     }
 
     @Test func noSpendingDaysFallsBackToWholeWindow() {
-        var plan = PacePlan()
+        var plan = PacePlan(finishWeekday: 6)
         plan.activeWeekdays = []
         let schedule = PaceSchedule(plan: plan, window: window(), calendar: calendar)
         #expect(abs(schedule.days.map(\.share).reduce(0, +) - 1) < 1e-9)
@@ -118,7 +205,7 @@ struct PaceMathTests {
         #expect(report.projectedAtFinish == nil)
         #expect(report.runOutAt == nil)
         #expect(report.band(now: now).text == "\(Format.percent(report.todayLeft)) left today")
-        #expect(report.delta.text == "15% ahead")
+        #expect(report.delta.text == "15% ahead of plan")
         #expect(report.delta.tone == .neutral)
         #expect(report.detail(now: now) == "About \(Format.percent(report.todayLeft)) left for today under your plan.")
         #expect(PaceSeries(usage: ProviderUsage(weekly: window(used: 18), history: [], observedAt: now,
@@ -135,9 +222,9 @@ struct PaceMathTests {
 
     @Test func partialFirstSpendingDayDoesNotStartForecast() {
         let partialWindow = UsageWindow(usedPercent: 75, resetsAt: date("2026-09-28T12:00:00Z"), length: UsageWindow.week)
-        let monday = PaceReport(provider: .claude, window: partialWindow, plan: PacePlan(),
+        let monday = PaceReport(provider: .claude, window: partialWindow, plan: PacePlan(finishWeekday: 6),
                                 now: date("2026-09-21T18:00:00Z"), calendar: calendar)
-        let tuesday = PaceReport(provider: .claude, window: partialWindow, plan: PacePlan(),
+        let tuesday = PaceReport(provider: .claude, window: partialWindow, plan: PacePlan(finishWeekday: 6),
                                  now: date("2026-09-22T18:00:00Z"), calendar: calendar)
         #expect(monday.projectedAtFinish == nil)
         #expect(tuesday.projectedAtFinish != nil)

@@ -35,7 +35,7 @@ enum PlanShape: String, Codable, CaseIterable, Identifiable, Sendable {
 
 struct PacePlan: Codable, Equatable, Sendable {
     /// Calendar weekday to finish by (1 is Sunday). `nil` spreads usage until the reset.
-    var finishWeekday: Int? = 6
+    var finishWeekday: Int? = nil
     var targetPercent: Double = 100
     var shape: PlanShape = .even
     var activeWeekdays: Set<Int> = [2, 3, 4, 5, 6]
@@ -183,16 +183,27 @@ struct PaceReport: Sendable {
     let todayLeft: Double
     /// Average percent per spending day after today under the rebalanced plan.
     let perDayAfterToday: Double
+    /// All planned spending hours are over, but capacity is still available before reset.
+    let usesOffDays: Bool
     let finishBy: Date
     let resetsAt: Date
     let schedule: PaceSchedule
 
     init(provider: Provider, window: UsageWindow, plan: PacePlan, now: Date, calendar: Calendar = .current) {
-        let schedule = PaceSchedule(plan: plan, window: window, calendar: calendar)
-        let fraction = schedule.plannedFraction(at: now)
         let used = window.usedPercent
         let target = plan.targetPercent
+        let remaining = max(0, target - used)
+        var schedule = PaceSchedule(plan: plan, window: window, calendar: calendar)
+        if schedule.plannedFraction(at: now) >= 1 - 1e-6, remaining >= 0.5, now < window.resetsAt {
+            // A chosen finish day is a goal, not an expiry. Carry leftovers into the
+            // remaining spending days in this provider's own limit window.
+            var catchUpPlan = plan
+            catchUpPlan.finishWeekday = nil
+            schedule = PaceSchedule(plan: catchUpPlan, window: window, calendar: calendar)
+        }
+        let fraction = schedule.plannedFraction(at: now)
         let expected = target * fraction
+        let usesOffDays = fraction >= 1 - 1e-6 && remaining >= 0.5 && now < window.resetsAt
 
         self.provider = provider
         self.used = used
@@ -203,11 +214,11 @@ struct PaceReport: Sendable {
         self.finishBy = schedule.finishBy
         self.resetsAt = window.resetsAt
         self.schedule = schedule
+        self.usesOffDays = usesOffDays
 
         // Spread what is left over the rest of the plan, in the plan's proportions. When usage
         // is ahead of plan, today only gets what keeps it on the plan by tonight, so an overspend
         // is paid back first instead of being spread thin across the rest of the week.
-        let remaining = max(0, target - used)
         let remainingFraction = 1 - fraction
         let tomorrow = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: now)) ?? now
         let fractionByTomorrow = schedule.plannedFraction(at: tomorrow)
@@ -217,6 +228,11 @@ struct PaceReport: Sendable {
             let onPlanByTonight = max(0, target * fractionByTomorrow - used)
             todayLeft = min(rebalanced, onPlanByTonight)
             perDayAfterToday = futureDays > 0 ? (remaining - todayLeft) / Double(futureDays) : 0
+        } else if usesOffDays {
+            // No preferred hours remain. Make all leftovers available now instead
+            // of reserving capacity for off days the person may not work.
+            todayLeft = remaining
+            perDayAfterToday = 0
         } else {
             todayLeft = 0
             perDayAfterToday = 0
@@ -247,6 +263,8 @@ struct PaceReport: Sendable {
         let tolerance = max(3, expected * 0.1)
         if used >= 99.5 {
             state = .out
+        } else if usesOffDays {
+            state = .slack
         } else if now >= schedule.finishBy {
             state = used >= target - 2 ? .done : .slack
         } else if used - expected > tolerance {

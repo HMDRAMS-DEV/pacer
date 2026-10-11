@@ -81,9 +81,9 @@ final class PacerStore {
 
     #if DEBUG
     /// A store with fixed data, for previews and snapshot tests.
-    init(preview usage: [Provider: ProviderUsage], now: Date) {
-        plan = PacePlan()
-        enabled = Set(Provider.allCases)
+    init(preview usage: [Provider: ProviderUsage], now: Date, plan: PacePlan = PacePlan()) {
+        self.plan = plan
+        enabled = Set(usage.keys)
         self.usage = usage
         self.now = now
         lastRefresh = now.addingTimeInterval(-120)
@@ -275,10 +275,10 @@ extension PaceReport {
         case .out:
             return ("moon.zzz.fill", "Back in \(reset)", .bad)
         case .slack:
-            if now >= finishBy {
-                return ("gift.fill", "\(Format.percent(100 - used)) spare, resets in \(reset)", .good)
+            if usesOffDays {
+                return ("arrow.up.right", "Use \(Format.percent(max(0, target - used))) in \(reset)", .good)
             }
-            return ("arrow.up.right", "Room for \(Format.percent(typicalDay)) a day", .good)
+            return ("arrow.up.right", "Use \(Format.percent(typicalDay)) per spending day", .good)
         case .onPace:
             return todayLeft >= 0.5
                 ? ("sun.max.fill", "\(Format.percent(todayLeft)) left today", .accent)
@@ -301,8 +301,8 @@ extension PaceReport {
         let difference = used - expected
         if abs(difference) < 1 { return ("on plan", .neutral) }
         return difference > 0
-            ? ("\(Format.percent(difference)) ahead", projectedAtFinish == nil && todayLeft >= 0.5 ? .neutral : .bad)
-            : ("\(Format.percent(-difference)) under", .good)
+            ? ("\(Format.percent(difference)) ahead of plan", projectedAtFinish == nil && todayLeft >= 0.5 ? .neutral : .bad)
+            : ("\(Format.percent(-difference)) under plan", .good)
     }
 
     func detail(now: Date) -> String {
@@ -335,14 +335,16 @@ extension PaceReport {
             }
             return "You're \(Format.percent(used - expected)) ahead of plan. \(advice)"
         case .slack:
-            if now >= finishBy {
-                return "\(Format.percent(100 - used)) left until it resets \(Format.moment(resetsAt, now: now))."
+            let remaining = Format.percent(max(0, target - used))
+            let reset = Format.moment(resetsAt, now: now)
+            if usesOffDays {
+                return "\(remaining) left to use before it resets \(reset). No spending hours remain, so use the extra time before reset."
             }
             guard let projectedAtFinish else {
                 return "About \(Format.percent(todayLeft)) left for today under your plan."
             }
             let leftover = max(0, target - projectedAtFinish)
-            return "On track to leave \(Format.percent(leftover)) unused. You can spend about \(Format.percent(typicalDay)) a day through \(finish)."
+            return "On track to leave \(Format.percent(leftover)) unused. Use about \(Format.percent(typicalDay)) per spending day to finish by \(finish). \(remaining) left before reset \(reset)."
         case .out:
             return "Resets \(Format.moment(resetsAt, now: now))."
         case .done:

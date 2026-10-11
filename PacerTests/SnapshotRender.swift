@@ -61,4 +61,40 @@ struct SnapshotRender {
               let png = NSBitmapImageRep(data: tiff)?.representation(using: .png, properties: [:]) else { return }
         try? png.write(to: folder.appending(path: "\(name).png"))
     }
+
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["PACER_SNAPSHOTS"] != nil))
+    func renderTuesdayReset() throws {
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let now = Dates.parseISO("2026-10-11T01:00:00Z")!
+        let usage = ProviderUsage(
+            weekly: UsageWindow(usedPercent: 63, resetsAt: Date(timeIntervalSince1970: 1791948930), length: UsageWindow.week),
+            history: [UsagePoint(date: now, usedPercent: 63)], observedAt: now, historyIsEstimated: false)
+        for finish: Int? in [6, nil] {
+            var plan = PacePlan()
+            plan.finishWeekday = finish
+            plan.shape = .frontLoaded
+            let store = PacerStore(preview: [.codex: usage], now: now, plan: plan)
+            for scheme in [ColorScheme.light, .dark] {
+                save(PopoverView().environment(store)
+                    .background(scheme == .dark ? Color(white: 0.17) : Color(white: 0.93))
+                    .environment(\.colorScheme, scheme),
+                     "tuesday-\(finish == nil ? "reset" : "friday")-\(scheme == .light ? "light" : "dark")")
+            }
+        }
+    }
+
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["PACER_SNAPSHOTS"] != nil))
+    func renderOffDayCatchUp() throws {
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        let now = Dates.parseISO("2026-10-11T01:00:00Z")!
+        let usage = ProviderUsage(
+            weekly: UsageWindow(usedPercent: 63, resetsAt: Dates.parseISO("2026-10-11T16:00:00Z")!, length: UsageWindow.week),
+            history: [UsagePoint(date: now, usedPercent: 63)], observedAt: now, historyIsEstimated: false)
+        let store = PacerStore(preview: [.codex: usage], now: now)
+        for scheme in [ColorScheme.light, .dark] {
+            save(PopoverView().environment(store)
+                .background(scheme == .dark ? Color(white: 0.17) : Color(white: 0.93))
+                .environment(\.colorScheme, scheme), "catch-up-\(scheme == .light ? "light" : "dark")")
+        }
+    }
 }

@@ -23,8 +23,8 @@ targets:
       path: Pacer/Info.plist
       properties:
         CFBundleDisplayName: Pacer
-        CFBundleShortVersionString: "0.1.8"
-        CFBundleVersion: "9"
+        CFBundleShortVersionString: "0.1.9"
+        CFBundleVersion: "10"
         SUFeedURL: https://pacer.ramihmd.com/appcast.xml
         SUPublicEDKey: qOxwZqP7ofp2K4TUTCMqAA5P8EF/sbNrcEubiWKNHTE=
         SUEnableAutomaticChecks: true

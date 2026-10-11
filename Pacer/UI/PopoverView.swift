@@ -259,17 +259,19 @@ struct UsageCard: View {
             .background(band.tone.wash, in: Capsule())
     }
 
-    /// The plan struck through next to how far off you are, like a rescheduled departure.
+    /// Label the comparison so the planned percentage isn't mistaken for the limit.
     private func planLine(_ report: PaceReport) -> some View {
         let delta = report.delta
         return HStack(spacing: 5) {
-            Text(Format.percent(report.expected))
-                .strikethrough(delta.tone != .neutral, color: Theme.muted)
+            Text("Plan \(Format.percent(report.expected))")
                 .foregroundStyle(Theme.muted)
             Text(delta.text)
                 .foregroundStyle(delta.tone.color)
         }
         .font(.system(size: large ? 14 : 12, weight: .medium).monospacedDigit())
+        .lineLimit(1)
+        .minimumScaleFactor(0.85)
+        .help(report.detail(now: store.now))
     }
 
     private var placeholder: some View {

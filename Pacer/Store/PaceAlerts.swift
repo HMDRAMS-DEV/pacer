@@ -10,7 +10,7 @@ enum PaceAlerts {
         let weekday = calendar.component(.weekday, from: now)
 
         for report in reports {
-            guard plan.activeWeekdays.contains(weekday),
+            guard plan.activeWeekdays.contains(weekday) || report.usesOffDays,
                   (plan.dayStartHour..<plan.dayEndHour).contains(hour) else { continue }
 
             let kind: String
@@ -19,7 +19,8 @@ enum PaceAlerts {
                 kind = "hot"
                 title = "Ease off \(report.provider.name)"
             } else if report.state == .slack, report.plannedFraction >= 0.3,
-                      let projected = report.projectedAtFinish, report.target - projected >= 15 {
+                      let projected = report.projectedAtFinish,
+                      report.target - projected >= (report.usesOffDays ? 0.5 : 15) {
                 kind = "slack"
                 title = "Lean into \(report.provider.name)"
             } else {
