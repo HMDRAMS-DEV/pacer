@@ -7,6 +7,15 @@
     <language>en</language>
     <!-- releases -->
     <item>
+      <title>Pacer 0.1.9</title>
+      <pubDate>Sun, 11 Oct 2026 01:14:36 +0000</pubDate>
+      <sparkle:version>10</sparkle:version>
+      <sparkle:shortVersionString>0.1.9</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>15.0</sparkle:minimumSystemVersion>
+      <description><![CDATA[<p>Pacer now follows each tool’s reset and helps you use leftover capacity before it expires. Missed finish targets rebalance automatically, with clearer plan comparisons and catch-up guidance on off days.</p>]]></description>
+      <enclosure url="https://github.com/HMDRAMS-DEV/pacer/releases/download/v0.1.9/Pacer.dmg" type="application/octet-stream" sparkle:edSignature="nEvJ8v9lxiKkS+wz3ErnCFqbuw462D5m+Q5HIh3qF/8lmaFPy0taTlUlsrsKw14SyM5o/Rp3Ry8pkTfw+xbmCA==" length="2452407"/>
+    </item>
+    <item>
       <title>Pacer 0.1.8</title>
       <pubDate>Sat, 10 Oct 2026 13:08:12 +0000</pubDate>
       <sparkle:version>9</sparkle:version>
